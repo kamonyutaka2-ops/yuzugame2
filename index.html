@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-fullscreen">
+<meta name="mobile-web-app-capable" content="yes">
+<title>🎹 ピアノランド</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Fredoka+One&display=swap');
+
+:root {
+  --accent:#ff6bcb; --accent2:#7bf7ff;
+  --ui-bg:rgba(255,255,255,0.09); --ui-border:rgba(255,255,255,0.18);
+}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+
+html { width:100%; height:100%; overflow:hidden; }
+body {
+  font-family:'Nunito',sans-serif; color:#fff;
+  background:#0a0020;
+  display:flex; flex-direction:column;
+  overflow:hidden; touch-action:none;
+  /* 縦持ち時は position:fixed + rotate(90deg) で横向きに固定
+     横持ち時は通常表示。JSで切り替え */
+  position:fixed; top:0; left:0;
+}
+
+/* ── BG ── */
+#bg-canvas { position:fixed; inset:0; pointer-events:none; z-index:0; }
+
+/* ══════════════════════════════
+   TOP PANEL  (上30%)
+══════════════════════════════ */
+.top-panel {
+  position:relative; z-index:10;
+  flex: 0 0 30%;          /* 30%固定 */
+  max-height: 30%;
+  width:100%;
+  display:flex; flex-direction:column;
+  padding: 5px 8px 3px;
+  gap: 3px;
+  overflow: hidden;
+}
+
+/* ─ row1: タイトル＋ボリューム＋ボタン群 ─ */
+.top-row1 {
+  display:flex; align-items:center; gap:7px;
+  flex-shrink:0;
+}
+.app-title {
+  font-family:'Fredoka One',cursive;
+  font-size: clamp(15px,4vw,22px);
+  background:linear-gradient(135deg,#ff6bcb,#7bf7ff,#ffec5c);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  filter:drop-shadow(0 0 5px rgba(255,107,203,.5));
+  flex-shrink:0;
+  white-space:nowrap;
+}
+.vol-row { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+.vol-row span { font-size:14px; }
+.vol-row input[type=range] {
+  -webkit-appearance:none; width:65px; height:4px; border-radius:4px; outline:none;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+}
+.vol-row input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:13px; height:13px; border-radius:50%; background:#fff;
+  box-shadow:0 0 4px rgba(255,107,203,.6);
+}
+.spacer { flex:1; }
+.icon-btn {
+  background:var(--ui-bg); border:1px solid var(--ui-border);
+  border-radius:50%; width:32px; height:32px; font-size:16px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .15s,background .15s; color:#fff; flex-shrink:0;
+}
+.icon-btn:active { transform:scale(.88); }
+
+/* ─ 設定rows共通 ─ */
+.setting-row {
+  display:flex; align-items:center; gap:5px;
+  flex-shrink:0;
+  overflow-x:auto; scrollbar-width:none;
+}
+.setting-row::-webkit-scrollbar { display:none; }
+
+.row-label {
+  font-size:10px; font-weight:800;
+  color:rgba(255,255,255,.55);
+  white-space:nowrap; flex-shrink:0;
+  min-width:20px;
+}
+
+/* ─ pill ─ */
+.pill {
+  background:var(--ui-bg); border:1.5px solid var(--ui-border);
+  border-radius:20px; padding:3px 9px;
+  font-family:'Nunito',sans-serif; font-size:11px; font-weight:700;
+  color:rgba(255,255,255,.8); cursor:pointer;
+  white-space:nowrap; flex-shrink:0;
+  transition:all .15s; user-select:none;
+  display:flex; align-items:center; gap:3px;
+}
+.pill.active {
+  background:linear-gradient(135deg,var(--accent),#c847ff);
+  border-color:transparent; color:#fff;
+  box-shadow:0 0 9px rgba(255,107,203,.45);
+}
+.pill:active { transform:scale(.92); }
+
+/* ─ color swatch inside pill ─ */
+.swatch-row { display:inline-flex; gap:2px; }
+.swatch { display:inline-block; width:7px; height:11px; border-radius:2px; border:1px solid rgba(255,255,255,.25); }
+
+/* ─ デモ行 ─ */
+.demo-btn {
+  background:linear-gradient(135deg,#ffec5c,#ff9f43); border:none; border-radius:18px;
+  padding:4px 11px; font-family:'Fredoka One',cursive; font-size:12px; color:#3a2000;
+  cursor:pointer; box-shadow:0 2px 8px rgba(255,159,67,.35); transition:all .15s; flex-shrink:0;
+}
+.demo-btn:active { transform:scale(.93); }
+.demo-btn.playing { background:linear-gradient(135deg,#ff6bcb,#c847ff); color:#fff; }
+.song-select {
+  background:var(--ui-bg); border:1.5px solid var(--ui-border); border-radius:14px;
+  padding:3px 7px; font-family:'Nunito',sans-serif; font-size:11px; font-weight:700;
+  color:#fff; cursor:pointer; flex:1 1 80px; min-width:0; max-width:130px;
+  outline:none; appearance:none; -webkit-appearance:none;
+}
+.tempo-ctrl { display:flex; align-items:center; gap:3px; flex-shrink:0; }
+.tempo-ctrl span { font-size:10px; color:rgba(255,255,255,.6); font-weight:700; }
+.tempo-btn {
+  background:var(--ui-bg); border:1px solid var(--ui-border); color:#fff;
+  border-radius:7px; width:21px; height:21px; font-size:13px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+
+/* ── note bubble ── */
+.note-display {
+  position:relative; z-index:10;
+  height:22px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+}
+.note-name-bubble {
+  font-family:'Fredoka One',cursive; font-size:16px;
+  opacity:0; transition:opacity .1s;
+  background:linear-gradient(135deg,#ff6bcb,#c847ff);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  filter:drop-shadow(0 0 5px rgba(255,107,203,.6));
+}
+.note-name-bubble.show { opacity:1; }
+
+/* ══════════════════════════════
+   PIANO AREA  (下70%)
+══════════════════════════════ */
+.piano-wrapper {
+  position:relative; z-index:10;
+  flex: 1;           /* 残り全部 */
+  width:100%;
+  display:flex; align-items:center; justify-content:center;
+  padding:4px 4px 10px;
+  overflow:hidden;
+}
+.piano {
+  position:relative; display:flex;
+  touch-action:none; user-select:none;
+  align-items:flex-end;
+}
+
+/* ── keys ── */
+.white-key {
+  position:relative; cursor:pointer; flex-shrink:0;
+  border-radius:0 0 10px 10px;
+  border:2px solid rgba(0,0,0,.22);
+  display:flex; align-items:flex-end; justify-content:center;
+  padding-bottom:5px;
+  box-shadow:0 5px 10px rgba(0,0,0,.35), inset 0 -2px 4px rgba(0,0,0,.1);
+  transition:filter .08s, transform .08s;
+}
+.white-key.active { filter:brightness(.75); transform:translateY(2px); }
+.note-label { font-size:clamp(7px,1.5vw,11px); font-weight:800; pointer-events:none; opacity:.6; }
+.black-key {
+  position:absolute; cursor:pointer; z-index:2;
+  border-radius:0 0 7px 7px;
+  box-shadow:2px 5px 9px rgba(0,0,0,.65), inset 0 -2px 3px rgba(255,255,255,.08);
+  transition:filter .08s, transform .08s;
+}
+.black-key.active { filter:brightness(1.6); transform:translateY(2px); }
+
+/* ── particles ── */
+.note-particle {
+  position:fixed; pointer-events:none; z-index:100;
+  font-size:22px; animation:floatUp 1.2s ease-out forwards;
+}
+@keyframes floatUp {
+  0%   { opacity:1; transform:translateY(0) scale(1) rotate(0deg); }
+  100% { opacity:0; transform:translateY(-110px) scale(.5) rotate(30deg); }
+}
+
+/* ══════════════════════════════
+   MODAL
+══════════════════════════════ */
+.modal-overlay {
+  display:none; position:fixed; inset:0; z-index:200;
+  background:rgba(0,0,0,.72); backdrop-filter:blur(6px);
+  align-items:center; justify-content:center;
+}
+.modal-overlay.open { display:flex; }
+.modal {
+  background:linear-gradient(135deg,#1e0840,#0d1a4a);
+  border:1.5px solid rgba(255,255,255,.2); border-radius:22px;
+  padding:20px 18px; width:min(380px,94vw); max-height:82vh; overflow-y:auto;
+  scrollbar-width:thin; scrollbar-color:rgba(255,107,203,.4) transparent;
+}
+.modal h2 {
+  font-family:'Fredoka One',cursive; font-size:20px; margin-bottom:14px; text-align:center;
+  background:linear-gradient(135deg,#ff6bcb,#7bf7ff);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.modal-section { margin-bottom:13px; }
+.modal-section label { font-size:11px; font-weight:800; color:rgba(255,255,255,.6); display:block; margin-bottom:5px; }
+.chip-grid { display:flex; flex-wrap:wrap; gap:5px; }
+.chip {
+  padding:5px 11px; border-radius:14px; font-size:11px; font-weight:700;
+  background:rgba(255,255,255,.08); border:1.5px solid rgba(255,255,255,.15);
+  color:rgba(255,255,255,.8); cursor:pointer; transition:all .15s; user-select:none;
+}
+.chip.active {
+  background:linear-gradient(135deg,var(--accent),#c847ff);
+  border-color:transparent; color:#fff; box-shadow:0 0 8px rgba(255,107,203,.4);
+}
+.chip:active { transform:scale(.92); }
+.close-modal-btn {
+  width:100%; padding:11px; border-radius:14px; border:none;
+  background:linear-gradient(135deg,var(--accent),#c847ff);
+  font-family:'Fredoka One',cursive; font-size:15px; color:#fff;
+  cursor:pointer; margin-top:6px;
+}
+
+
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+
+<!-- ══ TOP PANEL ══ -->
+<div class="top-panel">
+
+  <!-- row1: タイトル・音量・アイコン -->
+  <div class="top-row1">
+    <div class="app-title">🎹 ピアノランド</div>
+    <div class="vol-row">
+      <span>🔊</span>
+      <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="0.7">
+    </div>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="settings-btn" onclick="openSettings()">⚙️</button>
+  </div>
+
+  <!-- row2: 鍵盤数 ＋ 音色 -->
+  <div class="setting-row">
+    <span class="row-label">🎹</span>
+    <button class="pill active" onclick="setKeys(10,this)">10けん</button>
+    <button class="pill" onclick="setKeys(20,this)">20けん</button>
+    <button class="pill" onclick="setKeys(30,this)">30けん</button>
+    <span class="row-label" style="margin-left:4px">🎵</span>
+    <button class="pill active" data-timbre="piano"   onclick="setTimbre('piano',this)">🎹ピアノ</button>
+    <button class="pill" data-timbre="organ"   onclick="setTimbre('organ',this)">🎻オルガン</button>
+    <button class="pill" data-timbre="guitar"  onclick="setTimbre('guitar',this)">🎸ギター</button>
+    <button class="pill" data-timbre="bell"    onclick="setTimbre('bell',this)">🔔ベル</button>
+    <button class="pill" data-timbre="marimba" onclick="setTimbre('marimba',this)">🪘マリンバ</button>
+    <button class="pill" data-timbre="synth"   onclick="setTimbre('synth',this)">🤖シンセ</button>
+  </div>
+
+  <!-- row3: 背景テーマ -->
+  <div class="setting-row">
+    <span class="row-label">🌏</span>
+    <button class="pill active" data-theme="space"   onclick="setTheme('space',this)">🚀うちゅう</button>
+    <button class="pill" data-theme="ocean"   onclick="setTheme('ocean',this)">🌊うみ</button>
+    <button class="pill" data-theme="forest"  onclick="setTheme('forest',this)">🌿もり</button>
+    <button class="pill" data-theme="candy"   onclick="setTheme('candy',this)">🍭キャンディ</button>
+    <button class="pill" data-theme="sunset"  onclick="setTheme('sunset',this)">🌅サンセット</button>
+    <button class="pill" data-theme="night"   onclick="setTheme('night',this)">🌙よぞら</button>
+    <button class="pill" data-theme="rainbow" onclick="setTheme('rainbow',this)">🌈にじ</button>
+    <button class="pill" data-theme="cute"    onclick="setTheme('cute',this)">🌸かわいい</button>
+  </div>
+
+  <!-- row4: 鍵盤カラー ＋ デモ -->
+  <div class="setting-row">
+    <span class="row-label">🎨</span>
+    <button class="pill active" data-kc="classic" onclick="setKeyColor('classic',this)">⬜ふつう</button>
+    <button class="pill" data-kc="rainbow" onclick="setKeyColor('rainbow',this)">🌈レインボー</button>
+    <button class="pill" data-kc="pastel"  onclick="setKeyColor('pastel',this)">🍬パステル</button>
+    <button class="pill" data-kc="neon"    onclick="setKeyColor('neon',this)">💜ネオン</button>
+    <button class="pill" data-kc="ocean"   onclick="setKeyColor('ocean',this)">🌊オーシャン</button>
+    <button class="pill" data-kc="sunset"  onclick="setKeyColor('sunset',this)">🌅サンセット</button>
+    <span style="flex-shrink:0;width:6px"></span>
+    <button class="demo-btn" id="demo-btn" onclick="toggleDemo()">▶ みほん</button>
+    <select class="song-select" id="song-select" onchange="stopDemo()">
+      <option value="canon">カノン</option>
+      <option value="twinkle">きらきら星</option>
+      <option value="bday">ハッピーバースデー</option>
+      <option value="doremi">ドレミのうた</option>
+      <option value="elise">エリーゼのために</option>
+      <option value="joy">よろこびのうた</option>
+    </select>
+    <div class="tempo-ctrl">
+      <span>♩</span>
+      <button class="tempo-btn" onclick="changeTempo(-10)">－</button>
+      <span id="tempo-val" style="font-size:11px;font-weight:800;min-width:26px;text-align:center;">100</span>
+      <button class="tempo-btn" onclick="changeTempo(+10)">＋</button>
+    </div>
+  </div>
+
+</div><!-- /top-panel -->
+
+<!-- note bubble -->
+<div class="note-display">
+  <div class="note-name-bubble" id="note-bubble">ド</div>
+</div>
+
+<!-- ══ PIANO AREA ══ -->
+<div class="piano-wrapper">
+  <div class="piano" id="piano"></div>
+</div>
+
+<!-- ══ SETTINGS MODAL (エフェクトのみ) ══ -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal">
+    <h2>🌟 エフェクト せってい</h2>
+    <div class="modal-section">
+      <label>✨ エフェクト</label>
+      <div class="chip-grid">
+        <div class="chip active" id="particle-toggle" onclick="toggleParticles(this)">🎵 エフェクト ON</div>
+        <div class="chip active" id="label-toggle"    onclick="toggleLabels(this)">🏷 おとの名まえ ON</div>
+      </div>
+    </div>
+    <button class="close-modal-btn" onclick="closeSettings()">✓ とじる</button>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   AUDIO ENGINE
+═══════════════════════════════════════ */
+const AC = new (window.AudioContext || window.webkitAudioContext)();
+const masterGain = AC.createGain();
+masterGain.gain.value = 0.7;
+masterGain.connect(AC.destination);
+
+let currentTimbre = 'piano';
+let particlesOn = true;
+let labelsOn = true;
+
+document.getElementById('vol-slider').addEventListener('input', e =>
+  masterGain.gain.setTargetAtTime(+e.target.value, AC.currentTime, 0.02));
+
+function resumeAC() { if (AC.state === 'suspended') AC.resume(); }
+
+const TIMBRES = {
+  piano:   { wave:'custom',   attack:.003, decay:.5,  sustain:.15, release:.8,  harmonics:[1,.6,.3,.15,.08,.04,.02], filterFreq:4000,  filterQ:.7,  filterType:'lowpass'  },
+  organ:   { wave:'sine',     attack:.01,  decay:.0,  sustain:.9,  release:.05, harmonics:[1,.8,.6,.4,.3,.2,.15,.1], filterFreq:8000,  filterQ:.5,  filterType:'lowpass'  },
+  guitar:  { wave:'custom',   attack:.002, decay:.3,  sustain:.05, release:1.2, harmonics:[1,.5,.25,.12,.06,.03],    filterFreq:3000,  filterQ:1.2, filterType:'lowpass'  },
+  bell:    { wave:'sine',     attack:.001, decay:.1,  sustain:.05, release:2.5, harmonics:[1,.4,.2,.1],              filterFreq:10000, filterQ:.5,  filterType:'highpass' },
+  marimba: { wave:'custom',   attack:.002, decay:.15, sustain:.02, release:.6,  harmonics:[1,.3,.15,.05],            filterFreq:5000,  filterQ:.8,  filterType:'bandpass' },
+  synth:   { wave:'sawtooth', attack:.02,  decay:.1,  sustain:.6,  release:.3,  harmonics:[1],                       filterFreq:2000,  filterQ:5,   filterType:'lowpass'  }
+};
+
+function createWave(h) {
+  const r = new Float32Array(h.length+1), im = new Float32Array(h.length+1);
+  h.forEach((v,i) => im[i+1] = v);
+  return AC.createPeriodicWave(r, im, {disableNormalization:false});
+}
+
+function playNote(freq, dur = 0.8) {
+  resumeAC();
+  const t = TIMBRES[currentTimbre], now = AC.currentTime;
+  const g = AC.createGain(); g.connect(masterGain);
+  const f = AC.createBiquadFilter();
+  f.type = t.filterType; f.frequency.value = t.filterFreq; f.Q.value = t.filterQ;
+  f.connect(g);
+  const o = AC.createOscillator();
+  t.wave === 'custom' ? o.setPeriodicWave(createWave(t.harmonics)) : (o.type = t.wave);
+  o.frequency.value = freq;
+  if (currentTimbre === 'organ') {
+    const o2=AC.createOscillator(), g2=AC.createGain();
+    o2.type='sine'; o2.frequency.value=freq*2; g2.gain.value=.3;
+    o2.connect(g2); g2.connect(f); o2.start(now); o2.stop(now+dur+t.release+.1);
+  }
+  if (currentTimbre === 'synth') {
+    const lfo=AC.createOscillator(), lg=AC.createGain();
+    lfo.frequency.value=5; lg.gain.value=freq*.01;
+    lfo.connect(lg); lg.connect(o.frequency); lfo.start(now); lfo.stop(now+dur+.5);
+  }
+  o.connect(f);
+  g.gain.setValueAtTime(0, now);
+  g.gain.linearRampToValueAtTime(.7, now+t.attack);
+  g.gain.setTargetAtTime(t.sustain*.7, now+t.attack+t.decay, .1);
+  g.gain.setTargetAtTime(0, now+dur, t.release/3);
+  o.start(now); o.stop(now+dur+t.release+.5);
+}
+
+/* ═══════════════════════════════════════
+   KEY COLOR THEMES
+═══════════════════════════════════════ */
+const KC = {
+  classic: {
+    white: () => '#fff8f0',
+    black: () => null,
+    wText: 'rgba(150,90,130,.65)', bText: 'rgba(255,255,255,.5)'
+  },
+  rainbow: {
+    white: (i,n) => `hsl(${Math.round(i*360/Math.max(n,1))},78%,82%)`,
+    black: (i,n) => `hsl(${Math.round(i*360/Math.max(n,1))},88%,38%)`,
+    wText: 'rgba(0,0,0,.5)', bText: 'rgba(255,255,255,.85)'
+  },
+  pastel: {
+    white: (i) => ['#ffb3d9','#ffd6b3','#fffbb3','#b3ffcc','#b3d9ff','#d6b3ff','#ffb3f0'][i%7],
+    black: (i) => ['#e0559a','#e07a30','#c8b400','#1fc85a','#1a78e0','#8a2be2','#c020c0'][i%7],
+    wText: 'rgba(80,0,60,.6)', bText: 'rgba(255,255,255,.9)'
+  },
+  neon: {
+    white: (i) => ['#ff88cc','#88ffee','#aaff44','#ffee44','#44aaff','#ff4488','#88ffaa'][i%7],
+    black: (i) => ['#ff00aa','#00ffee','#aaff00','#ff8800','#0088ff','#ff0044','#00ff88'][i%7],
+    wText: 'rgba(0,0,0,.6)', bText: 'rgba(0,0,0,.7)'
+  },
+  ocean: {
+    white: (i) => ['#74ebd5','#90e0ef','#caf0f8','#ade8f4','#48cae4','#90e0ef','#74ebd5'][i%7],
+    black: (i) => ['#023e8a','#0077b6','#0096c7','#00b4d8','#0077b6','#023e8a','#0096c7'][i%7],
+    wText: 'rgba(0,30,80,.6)', bText: 'rgba(200,240,255,.9)'
+  },
+  sunset: {
+    white: (i) => ['#ffd200','#ffb347','#ff8c42','#ff6b6b','#ff4e50','#f9d423','#f97316'][i%7],
+    black: (i) => ['#c0392b','#e67e22','#d35400','#922b21','#e74c3c','#ca6f1e','#a04000'][i%7],
+    wText: 'rgba(80,20,0,.6)', bText: 'rgba(255,230,200,.9)'
+  }
+};
+let currentKC = 'classic';
+function setKeyColor(name, btn) {
+  currentKC = name;
+  document.querySelectorAll('[data-kc]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildPiano();
+}
+
+/* ═══════════════════════════════════════
+   NOTES / MIDI
+═══════════════════════════════════════ */
+const JP = ['ド','ド#','レ','レ#','ミ','ファ','ファ#','ソ','ソ#','ラ','ラ#','シ'];
+const midiToFreq = m => 440 * Math.pow(2, (m-69)/12);
+const isBlack    = m => [1,3,6,8,10].includes(m%12);
+
+let currentKeys = 10;
+const START_MIDI = 60; // C4
+
+/* ═══════════════════════════════════════
+   PIANO BUILD
+═══════════════════════════════════════ */
+function buildPiano() {
+  const piano   = document.getElementById('piano');
+  piano.innerHTML = '';
+
+  // ── compute sizes ──
+  const wrapper  = document.querySelector('.piano-wrapper');
+  const availW   = wrapper.clientWidth  - 8;
+  const availH   = wrapper.clientHeight - 14;
+
+  const midiKeys  = Array.from({length:currentKeys}, (_,i) => START_MIDI + i);
+  const whites    = midiKeys.filter(m => !isBlack(m));
+  const nW        = whites.length;
+
+  // 白鍵幅: 全幅÷白鍵数（上限56px）
+  const ww = Math.min(Math.floor(availW / nW), 56);
+  const wh = Math.min(availH, Math.max(80, availH));
+  const bw = Math.round(ww * 0.62);
+  const bh = Math.round(wh * 0.60);
+
+  piano.style.width  = (ww * nW) + 'px';
+  piano.style.height = wh + 'px';
+
+  const kc = KC[currentKC];
+
+  // black key index counter
+  let bIdx = 0, bMap = {};
+  midiKeys.forEach(m => { if (isBlack(m)) bMap[m] = bIdx++; });
+  const bTotal = bIdx;
+
+  // ── white keys ──
+  let wIdx = 0;
+  whites.forEach((midi, i) => {
+    const el = document.createElement('div');
+    el.className = 'white-key';
+    el.dataset.midi = midi;
+    const bg = kc.white(i, nW);
+    el.style.cssText = `width:${ww-2}px;height:${wh}px;margin:0 1px;background:${bg};`;
+    if (labelsOn) {
+      const lbl = document.createElement('span');
+      lbl.className = 'note-label';
+      lbl.textContent = JP[midi%12];
+      lbl.style.color = kc.wText;
+      el.appendChild(lbl);
+    }
+    el.addEventListener('pointerdown', e => { e.preventDefault(); triggerNote(midi, el); });
+    piano.appendChild(el);
+  });
+
+  // ── black keys ──
+  wIdx = 0;
+  midiKeys.forEach(midi => {
+    if (!isBlack(midi)) { wIdx++; return; }
+    const el = document.createElement('div');
+    el.className = 'black-key';
+    el.dataset.midi = midi;
+    const left = (wIdx-1)*ww + ww - bw/2;
+    const bgRaw = kc.black(bMap[midi], bTotal);
+    const bg = bgRaw || 'linear-gradient(180deg,#2a2a3e,#0d0d1a)';
+    el.style.cssText = `width:${bw}px;height:${bh}px;left:${left}px;top:0;background:${bg};`;
+    el.addEventListener('pointerdown', e => { e.preventDefault(); triggerNote(midi, el); });
+    piano.appendChild(el);
+  });
+
+  // slide-play
+  piano.addEventListener('pointermove', onSlide, {passive:false});
+  piano.addEventListener('pointerup',     clearPtr);
+  piano.addEventListener('pointercancel', clearPtr);
+}
+
+const ptrs = new Map();
+function onSlide(e) {
+  e.preventDefault();
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  if (el && (el.classList.contains('white-key') || el.classList.contains('black-key'))) {
+    const m = +el.dataset.midi;
+    if (ptrs.get(e.pointerId) !== m) { ptrs.set(e.pointerId, m); triggerNote(m, el); }
+  }
+}
+function clearPtr(e) { ptrs.delete(e.pointerId); }
+
+function triggerNote(midi, el) {
+  resumeAC();
+  playNote(midiToFreq(midi), 0.7);
+  el.classList.add('active');
+  setTimeout(() => el.classList.remove('active'), 200);
+  showNoteName(midi);
+  if (particlesOn) spawnParticle(el);
+}
+
+function showNoteName(midi) {
+  const b = document.getElementById('note-bubble');
+  b.textContent = JP[midi%12];
+  b.classList.add('show');
+  clearTimeout(b._t);
+  b._t = setTimeout(() => b.classList.remove('show'), 600);
+}
+
+/* ═══════════════════════════════════════
+   PARTICLES
+═══════════════════════════════════════ */
+const EMO = ['🎵','🎶','⭐','✨','💫','🌟','🎀','💖','🌸','🎊'];
+function spawnParticle(el) {
+  const r = el.getBoundingClientRect();
+  const p = document.createElement('div');
+  p.className = 'note-particle';
+  p.textContent = EMO[Math.random()*EMO.length|0];
+  p.style.left = (r.left + r.width/2 - 11) + 'px';
+  p.style.top  = (r.top - 8) + 'px';
+  document.body.appendChild(p);
+  p.addEventListener('animationend', () => p.remove());
+}
+
+/* ═══════════════════════════════════════
+   SETTINGS
+═══════════════════════════════════════ */
+function setKeys(n, btn) {
+  currentKeys = n;
+  document.querySelectorAll('[onclick*="setKeys"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildPiano();
+}
+function setTimbre(t, btn) {
+  currentTimbre = t;
+  document.querySelectorAll('[data-timbre]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function openSettings()  { document.getElementById('settings-modal').classList.add('open'); }
+function closeSettings() { document.getElementById('settings-modal').classList.remove('open'); }
+document.getElementById('settings-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeSettings();
+});
+function toggleParticles(el) {
+  particlesOn = !particlesOn;
+  el.classList.toggle('active');
+  el.textContent = particlesOn ? '🎵 エフェクト ON' : '🎵 エフェクト OFF';
+}
+function toggleLabels(el) {
+  labelsOn = !labelsOn;
+  el.classList.toggle('active');
+  el.textContent = labelsOn ? '🏷 おとの名まえ ON' : '🏷 おとの名まえ OFF';
+  buildPiano();
+}
+
+/* ═══════════════════════════════════════
+   BACKGROUND THEMES
+═══════════════════════════════════════ */
+const THEMES = {
+  space:   { drawBg: drawSpace   },
+  ocean:   { drawBg: drawOcean   },
+  forest:  { drawBg: drawForest  },
+  candy:   { drawBg: drawCandy   },
+  sunset:  { drawBg: drawSunset  },
+  night:   { drawBg: drawNight   },
+  rainbow: { drawBg: drawRainbow },
+  cute:    { drawBg: drawCute    }
+};
+let currentTheme = 'space';
+function setTheme(name, btn) {
+  currentTheme = name;
+  document.querySelectorAll('[data-theme]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+const bgC = document.getElementById('bg-canvas');
+const bgX = bgC.getContext('2d');
+let   bgT = 0;
+function resizeBg() {
+  // canvasはbodyと同じサイズ（回転後の横長サイズ）
+  bgC.width  = parseFloat(document.body.style.width)  || window.innerWidth;
+  bgC.height = parseFloat(document.body.style.height) || window.innerHeight;
+}
+resizeBg();
+
+// random pools
+const stars   = Array.from({length:180}, ()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.8+.3,t:Math.random()*Math.PI*2,s:Math.random()*.02+.005}));
+const bubbles = Array.from({length:30},  ()=>({x:Math.random(),y:Math.random()+.5,r:Math.random()*12+4,s:Math.random()*.003+.001}));
+const candies = Array.from({length:25},  ()=>({x:Math.random(),y:Math.random(),sz:Math.random()*14+6,s:Math.random()*.003+.001}));
+
+function drawSpace(c,w,h,t){
+  const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,'#0a0020');g.addColorStop(1,'#1a0040');c.fillStyle=g;c.fillRect(0,0,w,h);
+  stars.forEach(s=>{const b=.5+.5*Math.sin(s.t+t*s.s*60);c.beginPath();c.arc(s.x*w,s.y*h,s.r,0,Math.PI*2);c.fillStyle=`rgba(255,255,255,${.4+b*.6})`;c.fill();});
+  const pg=c.createRadialGradient(w*.15,h*.18,2,w*.15,h*.18,40);pg.addColorStop(0,'#ff6bcb');pg.addColorStop(1,'rgba(200,71,255,0)');c.beginPath();c.arc(w*.15,h*.18,40,0,Math.PI*2);c.fillStyle=pg;c.fill();
+  const ng=c.createRadialGradient(w*.8,h*.3,0,w*.8,h*.3,120);ng.addColorStop(0,'rgba(123,247,255,.12)');ng.addColorStop(1,'transparent');c.fillStyle=ng;c.fillRect(0,0,w,h);
+}
+function drawOcean(c,w,h,t){
+  const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,'#001a3a');g.addColorStop(.6,'#002d6b');g.addColorStop(1,'#001a3a');c.fillStyle=g;c.fillRect(0,0,w,h);
+  for(let i=0;i<3;i++){c.beginPath();c.moveTo(0,h*(.3+i*.12));for(let x=0;x<=w;x+=10)c.lineTo(x,h*(.3+i*.12)+Math.sin(x/w*Math.PI*6+t*.8+i*1.2)*(8-i*2));c.lineTo(w,h);c.lineTo(0,h);c.closePath();c.fillStyle=`rgba(0,180,255,${.06-i*.015})`;c.fill();}
+  bubbles.forEach(b=>{const y=((b.y-t*b.s)%1+1)%1;c.beginPath();c.arc(b.x*w,y*h,b.r,0,Math.PI*2);c.strokeStyle='rgba(0,212,255,.3)';c.lineWidth=1.5;c.stroke();});
+  const fx=(t*.05%1)*w*1.2-w*.1;c.font='28px serif';c.fillText('🐠',fx,h*.6);c.save();c.scale(-1,1);c.font='22px serif';c.fillText('🐟',-(w-fx*.4),h*.4);c.restore();
+}
+function drawForest(c,w,h,t){
+  const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,'#0a1f0a');g.addColorStop(1,'#0f2d12');c.fillStyle=g;c.fillRect(0,0,w,h);
+  for(let i=0;i<8;i++){const tx=w*(i/7),sw=Math.sin(t*.5+i)*3;c.save();c.translate(tx,h*.9+sw);c.fillStyle=`rgba(0,80,0,${.3+i%2*.15})`;c.beginPath();c.moveTo(0,0);c.lineTo(-25+i*2,-60-i*8);c.lineTo(25-i*2,-60-i*8);c.closePath();c.fill();c.restore();}
+  stars.slice(0,30).forEach(s=>{const b=.5+.5*Math.sin(s.t+t*.04*60);if(b>.5){c.beginPath();c.arc(s.x*w,s.y*h*.8+h*.1,2.5,0,Math.PI*2);c.fillStyle=`rgba(127,255,107,${b*.8})`;c.fill();}});
+}
+function drawCandy(c,w,h,t){
+  const g=c.createLinearGradient(0,0,w,h);g.addColorStop(0,'#2d0060');g.addColorStop(.5,'#4a0080');g.addColorStop(1,'#2d0060');c.fillStyle=g;c.fillRect(0,0,w,h);
+  const em=['🍭','🍬','🍫','⭐','🌈','💖','🎀'];
+  candies.forEach((cd,i)=>{const y=(cd.y-t*cd.s)%1;c.font=`${cd.sz+10}px serif`;c.globalAlpha=.35;c.fillText(em[i%7],cd.x*w,y*h);c.globalAlpha=1;});
+}
+function drawSunset(c,w,h,t){
+  const r=.5+.5*Math.sin(t*.3);const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,'#1a0a00');g.addColorStop(.4+r*.1,`rgb(${180+r*40|0},${60+r*30|0},0)`);g.addColorStop(.7,'#3d1500');g.addColorStop(1,'#0a0010');c.fillStyle=g;c.fillRect(0,0,w,h);
+  const sg=c.createRadialGradient(w*.5,h*.55,0,w*.5,h*.55,60);sg.addColorStop(0,'rgba(255,200,50,.9)');sg.addColorStop(.4,'rgba(255,140,0,.5)');sg.addColorStop(1,'transparent');c.fillStyle=sg;c.fillRect(0,0,w,h);
+  c.beginPath();c.moveTo(0,h*.8);for(let x=0;x<=w;x+=10)c.lineTo(x,h*.8-Math.sin(x/w*Math.PI*2)*h*.12);c.lineTo(w,h);c.lineTo(0,h);c.closePath();c.fillStyle='rgba(0,0,0,.5)';c.fill();
+}
+function drawNight(c,w,h,t){
+  const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,'#050510');g.addColorStop(1,'#0d0d2b');c.fillStyle=g;c.fillRect(0,0,w,h);
+  stars.forEach(s=>{const b=.5+.5*Math.sin(s.t+t*s.s*50);c.beginPath();c.arc(s.x*w,s.y*h*.8,s.r*1.2,0,Math.PI*2);c.fillStyle=`rgba(200,180,255,${.4+b*.6})`;c.fill();});
+  c.beginPath();c.arc(w*.82,h*.15,28,0,Math.PI*2);c.fillStyle='rgba(255,240,200,.9)';c.fill();c.beginPath();c.arc(w*.87,h*.13,24,0,Math.PI*2);c.fillStyle='#050510';c.fill();
+}
+function drawRainbow(c,w,h,t){
+  c.fillStyle='#0d0010';c.fillRect(0,0,w,h);
+  ['#ff4444','#ff9944','#ffee44','#44ff77','#44aaff','#8844ff','#ff44cc'].forEach((col,i)=>{
+    const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,col+'00');g.addColorStop(i/7+Math.sin(t*.3)*.03,col+'25');g.addColorStop(1,col+'00');c.fillStyle=g;c.fillRect(0,0,w,h);
+    for(let x=0;x<=w;x+=60){c.beginPath();c.arc(x,h*(i/7)+Math.sin(x/w*Math.PI*4+t+i)*20,4,0,Math.PI*2);c.fillStyle=col+'55';c.fill();}
+  });
+}
+function drawCute(c,w,h,t){
+  const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,'#1a0020');g.addColorStop(1,'#2d0040');c.fillStyle=g;c.fillRect(0,0,w,h);
+  stars.forEach((s,i)=>{const y=(s.y+t*s.s*.5)%1,b=.3+.4*Math.sin(s.t+t*.04*60);c.font=`${s.r*8+6}px serif`;c.globalAlpha=b*.5;c.fillText(['💕','🌸','⭐','✨'][i%4],s.x*w,y*h);c.globalAlpha=1;});
+}
+
+function bgLoop(ts) {
+  bgT = ts * .001;
+  bgX.clearRect(0, 0, bgC.width, bgC.height);
+  THEMES[currentTheme].drawBg(bgX, bgC.width, bgC.height, bgT);
+  requestAnimationFrame(bgLoop);
+}
+requestAnimationFrame(bgLoop);
+
+/* ═══════════════════════════════════════
+   DEMO SONGS
+═══════════════════════════════════════ */
+const SONGS = {
+  canon:   {notes:[[64,1],[62,1],[60,1],[59,1],[57,1],[55,1],[57,1],[59,1],[60,1],[59,1],[57,1],[55,1],[53,1],[52,1],[53,1],[55,1],[57,1],[55,1],[57,1],[59,1],[60,1],[59,1],[60,1],[62,1],[64,2],[62,1],[60,1],[59,1],[57,1],[55,1],[53,1],[52,1],[53,1],[55,1],[57,1],[55,1],[53,1],[52,1],[53,1],[55,1],[57,1],[59,1],[57,1],[55,1],[53,1],[52,1],[53,1],[55,1],[57,2]]},
+  twinkle: {notes:[[60,1],[60,1],[67,1],[67,1],[69,1],[69,1],[67,2],[65,1],[65,1],[64,1],[64,1],[62,1],[62,1],[60,2],[67,1],[67,1],[65,1],[65,1],[64,1],[64,1],[62,2],[67,1],[67,1],[65,1],[65,1],[64,1],[64,1],[62,2],[60,1],[60,1],[67,1],[67,1],[69,1],[69,1],[67,2],[65,1],[65,1],[64,1],[64,1],[62,1],[62,1],[60,2]]},
+  bday:    {notes:[[60,.75],[60,.25],[62,1],[60,1],[65,1],[64,2],[60,.75],[60,.25],[62,1],[60,1],[67,1],[65,2],[60,.75],[60,.25],[72,1],[69,1],[65,1],[64,1],[62,1],[70,.75],[70,.25],[69,1],[65,1],[67,1],[65,2]]},
+  doremi:  {notes:[[60,1],[62,1],[64,1],[60,1],[64,1],[60,1],[64,2],[65,1],[67,1],[65,1],[62,1],[67,1],[65,1],[67,2],[69,1],[65,1],[67,1],[69,1],[72,2],[69,1],[67,1],[65,1],[64,1],[62,1],[60,2],[64,1],[67,1],[65,1],[64,1],[60,2]]},
+  elise:   {notes:[[76,.5],[75,.5],[76,.5],[75,.5],[76,.5],[71,.5],[74,.5],[72,.5],[69,1.5],[60,.5],[64,.5],[69,.5],[71,1.5],[62,.5],[66,.5],[71,.5],[72,1.5],[64,.5],[76,.5],[75,.5],[76,.5],[75,.5],[76,.5],[71,.5],[74,.5],[72,.5],[69,1.5],[60,.5],[64,.5],[69,.5],[71,1],[72,.5],[64,.5],[71,.5],[69,.5],[60,2]]},
+  joy:     {notes:[[64,1],[64,1],[65,1],[67,1],[67,1],[65,1],[64,1],[62,1],[60,1],[60,1],[62,1],[64,1],[64,1.5],[62,.5],[62,2],[64,1],[64,1],[65,1],[67,1],[67,1],[65,1],[64,1],[62,1],[60,1],[60,1],[62,1],[64,1],[62,1.5],[60,.5],[60,2],[62,1],[62,1],[64,1],[60,1],[62,1],[64,.5],[65,.5],[64,1],[60,1],[62,1],[64,.5],[65,.5],[64,1],[62,1],[60,1],[62,1],[55,2]]}
+};
+
+let demoPlaying=false, demoTOs=[], tempo=100;
+
+function changeTempo(d) {
+  tempo = Math.max(40, Math.min(200, tempo+d));
+  document.getElementById('tempo-val').textContent = tempo;
+  if (demoPlaying) { stopDemo(); setTimeout(startDemo, 100); }
+}
+function toggleDemo() { demoPlaying ? stopDemo() : startDemo(); }
+function stopDemo() {
+  demoPlaying=false; demoTOs.forEach(clearTimeout); demoTOs=[];
+  document.getElementById('demo-btn').textContent='▶ みほん';
+  document.getElementById('demo-btn').classList.remove('playing');
+  document.querySelectorAll('.white-key.active,.black-key.active').forEach(k=>k.classList.remove('active'));
+}
+function startDemo() {
+  resumeAC(); demoPlaying=true;
+  document.getElementById('demo-btn').textContent='■ とめる';
+  document.getElementById('demo-btn').classList.add('playing');
+  const song = SONGS[document.getElementById('song-select').value];
+  const bms  = 60000 / tempo;
+  let time = 0;
+  song.notes.forEach(([midi, beats]) => {
+    const t=time, dur=beats*bms;
+    demoTOs.push(setTimeout(() => {
+      if (!demoPlaying) return;
+      playNote(midiToFreq(midi), dur*.85/1000);
+      showNoteName(midi);
+      const k = document.querySelector(`[data-midi="${midi}"]`);
+      if (k) { k.classList.add('active'); if(particlesOn) spawnParticle(k); setTimeout(()=>k.classList.remove('active'),dur*.8); }
+    }, t));
+    time += dur;
+  });
+  demoTOs.push(setTimeout(stopDemo, time+200));
+}
+
+/* ═══════════════════════════════════════
+   常に横長レイアウト固定
+   縦持ち時: position:fixed + 中心軸rotate(90deg) で横向きに見せる
+   横持ち時: 通常表示
+═══════════════════════════════════════ */
+function applyLayout() {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const body = document.body;
+
+  if (vh > vw) {
+    // 縦持ち: bodyをvh×vwの横長ボックスにして中心で90度回転
+    // 中心を画面中央に合わせるため top/left をオフセット
+    const W = vh; // 横長にした時の幅 = 縦画面の高さ
+    const H = vw; // 横長にした時の高さ = 縦画面の幅
+    body.style.width  = W + 'px';
+    body.style.height = H + 'px';
+    body.style.top    = ((vh - H) / 2) + 'px'; // = (vh-vw)/2
+    body.style.left   = ((vw - W) / 2) + 'px'; // = (vw-vh)/2 (負の値)
+    body.style.transform = 'rotate(90deg)';
+    body.style.transformOrigin = '50% 50%';
+  } else {
+    // 横持ち: そのまま全画面
+    body.style.width  = vw + 'px';
+    body.style.height = vh + 'px';
+    body.style.top    = '0';
+    body.style.left   = '0';
+    body.style.transform = 'none';
+    body.style.transformOrigin = '50% 50%';
+  }
+
+  resizeBg();
+  buildPiano();
+}
+
+let rzTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(rzTimer);
+  rzTimer = setTimeout(applyLayout, 80);
+});
+window.addEventListener('orientationchange', () => setTimeout(applyLayout, 300));
+screen.orientation?.addEventListener('change', () => setTimeout(applyLayout, 300));
+
+/* ── INIT ── */
+applyLayout();
+</script>
+</body>
+</html>
