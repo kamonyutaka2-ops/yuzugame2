@@ -22,8 +22,6 @@ body {
   background:#0a0020;
   display:flex; flex-direction:column;
   overflow:hidden; touch-action:none;
-  /* 縦持ち時は position:fixed + rotate(90deg) で横向きに固定
-     横持ち時は通常表示。JSで切り替え */
   position:fixed; top:0; left:0;
 }
 
@@ -31,118 +29,93 @@ body {
 #bg-canvas { position:fixed; inset:0; pointer-events:none; z-index:0; }
 
 /* ══════════════════════════════
-   TOP PANEL  (上30%)
+   TOP PANEL  (上28%)
 ══════════════════════════════ */
 .top-panel {
   position:relative; z-index:10;
-  flex: 0 0 30%;          /* 30%固定 */
-  max-height: 30%;
+  flex: 0 0 28%;
+  max-height: 28%;
   width:100%;
   display:flex; flex-direction:column;
   padding: 5px 8px 3px;
-  gap: 3px;
+  gap: 5px;
   overflow: hidden;
 }
 
-/* ─ row1: タイトル＋ボリューム＋ボタン群 ─ */
-.top-row1 {
-  display:flex; align-items:center; gap:7px;
-  flex-shrink:0;
-}
-.app-title {
-  font-family:'Fredoka One',cursive;
-  font-size: clamp(15px,4vw,22px);
-  background:linear-gradient(135deg,#ff6bcb,#7bf7ff,#ffec5c);
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-  filter:drop-shadow(0 0 5px rgba(255,107,203,.5));
-  flex-shrink:0;
-  white-space:nowrap;
-}
-.vol-row { display:flex; align-items:center; gap:4px; flex-shrink:0; }
-.vol-row span { font-size:14px; }
-.vol-row input[type=range] {
-  -webkit-appearance:none; width:65px; height:4px; border-radius:4px; outline:none;
-  background:linear-gradient(90deg,var(--accent),var(--accent2));
-}
-.vol-row input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance:none; width:13px; height:13px; border-radius:50%; background:#fff;
-  box-shadow:0 0 4px rgba(255,107,203,.6);
-}
-.spacer { flex:1; }
-.icon-btn {
-  background:var(--ui-bg); border:1px solid var(--ui-border);
-  border-radius:50%; width:32px; height:32px; font-size:16px; cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-  transition:transform .15s,background .15s; color:#fff; flex-shrink:0;
-}
-.icon-btn:active { transform:scale(.88); }
-
 /* ─ 設定rows共通 ─ */
 .setting-row {
-  display:flex; align-items:center; gap:5px;
+  display:flex; align-items:center; gap:6px;
   flex-shrink:0;
   overflow-x:auto; scrollbar-width:none;
 }
 .setting-row::-webkit-scrollbar { display:none; }
 
 .row-label {
-  font-size:10px; font-weight:800;
-  color:rgba(255,255,255,.55);
+  font-size:13px; font-weight:800;
+  color:rgba(255,255,255,.65);
   white-space:nowrap; flex-shrink:0;
-  min-width:20px;
+  min-width:22px;
 }
 
 /* ─ pill ─ */
 .pill {
-  background:var(--ui-bg); border:1.5px solid var(--ui-border);
-  border-radius:20px; padding:3px 9px;
-  font-family:'Nunito',sans-serif; font-size:11px; font-weight:700;
-  color:rgba(255,255,255,.8); cursor:pointer;
+  background:var(--ui-bg); border:2px solid var(--ui-border);
+  border-radius:22px; padding:5px 13px;
+  font-family:'Nunito',sans-serif; font-size:13px; font-weight:800;
+  color:rgba(255,255,255,.85); cursor:pointer;
   white-space:nowrap; flex-shrink:0;
   transition:all .15s; user-select:none;
-  display:flex; align-items:center; gap:3px;
+  display:flex; align-items:center; gap:4px;
+  min-height: 32px;
 }
 .pill.active {
   background:linear-gradient(135deg,var(--accent),#c847ff);
   border-color:transparent; color:#fff;
-  box-shadow:0 0 9px rgba(255,107,203,.45);
+  box-shadow:0 0 10px rgba(255,107,203,.5);
 }
 .pill:active { transform:scale(.92); }
 
-/* ─ color swatch inside pill ─ */
-.swatch-row { display:inline-flex; gap:2px; }
-.swatch { display:inline-block; width:7px; height:11px; border-radius:2px; border:1px solid rgba(255,255,255,.25); }
+/* ─ icon button (gear) ─ */
+.icon-btn {
+  background:var(--ui-bg); border:2px solid var(--ui-border);
+  border-radius:50%; width:34px; height:34px; font-size:18px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .15s,background .15s; color:#fff; flex-shrink:0;
+}
+.icon-btn:active { transform:scale(.88); }
 
 /* ─ デモ行 ─ */
 .demo-btn {
-  background:linear-gradient(135deg,#ffec5c,#ff9f43); border:none; border-radius:18px;
-  padding:4px 11px; font-family:'Fredoka One',cursive; font-size:12px; color:#3a2000;
+  background:linear-gradient(135deg,#ffec5c,#ff9f43); border:none; border-radius:20px;
+  padding:5px 13px; font-family:'Fredoka One',cursive; font-size:13px; color:#3a2000;
   cursor:pointer; box-shadow:0 2px 8px rgba(255,159,67,.35); transition:all .15s; flex-shrink:0;
+  min-height:32px;
 }
 .demo-btn:active { transform:scale(.93); }
 .demo-btn.playing { background:linear-gradient(135deg,#ff6bcb,#c847ff); color:#fff; }
 .song-select {
-  background:var(--ui-bg); border:1.5px solid var(--ui-border); border-radius:14px;
-  padding:3px 7px; font-family:'Nunito',sans-serif; font-size:11px; font-weight:700;
+  background:var(--ui-bg); border:2px solid var(--ui-border); border-radius:16px;
+  padding:4px 9px; font-family:'Nunito',sans-serif; font-size:12px; font-weight:700;
   color:#fff; cursor:pointer; flex:1 1 80px; min-width:0; max-width:130px;
   outline:none; appearance:none; -webkit-appearance:none;
+  min-height:32px;
 }
-.tempo-ctrl { display:flex; align-items:center; gap:3px; flex-shrink:0; }
-.tempo-ctrl span { font-size:10px; color:rgba(255,255,255,.6); font-weight:700; }
+.tempo-ctrl { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+.tempo-ctrl span { font-size:11px; color:rgba(255,255,255,.6); font-weight:700; }
 .tempo-btn {
-  background:var(--ui-bg); border:1px solid var(--ui-border); color:#fff;
-  border-radius:7px; width:21px; height:21px; font-size:13px; cursor:pointer;
+  background:var(--ui-bg); border:2px solid var(--ui-border); color:#fff;
+  border-radius:9px; width:26px; height:26px; font-size:15px; cursor:pointer;
   display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
 
 /* ── note bubble ── */
 .note-display {
   position:relative; z-index:10;
-  height:22px; flex-shrink:0;
+  height:26px; flex-shrink:0;
   display:flex; align-items:center; justify-content:center;
 }
 .note-name-bubble {
-  font-family:'Fredoka One',cursive; font-size:16px;
+  font-family:'Fredoka One',cursive; font-size:20px;
   opacity:0; transition:opacity .1s;
   background:linear-gradient(135deg,#ff6bcb,#c847ff);
   -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
@@ -151,11 +124,11 @@ body {
 .note-name-bubble.show { opacity:1; }
 
 /* ══════════════════════════════
-   PIANO AREA  (下70%)
+   PIANO AREA  (下72%)
 ══════════════════════════════ */
 .piano-wrapper {
   position:relative; z-index:10;
-  flex: 1;           /* 残り全部 */
+  flex: 1;
   width:100%;
   display:flex; align-items:center; justify-content:center;
   padding:4px 4px 10px;
@@ -170,18 +143,24 @@ body {
 /* ── keys ── */
 .white-key {
   position:relative; cursor:pointer; flex-shrink:0;
-  border-radius:0 0 10px 10px;
+  border-radius:0 0 12px 12px;
   border:2px solid rgba(0,0,0,.22);
   display:flex; align-items:flex-end; justify-content:center;
-  padding-bottom:5px;
-  box-shadow:0 5px 10px rgba(0,0,0,.35), inset 0 -2px 4px rgba(0,0,0,.1);
+  padding-bottom:6px;
+  box-shadow:0 5px 12px rgba(0,0,0,.35), inset 0 -2px 4px rgba(0,0,0,.1);
   transition:filter .08s, transform .08s;
 }
 .white-key.active { filter:brightness(.75); transform:translateY(2px); }
-.note-label { font-size:clamp(7px,1.5vw,11px); font-weight:800; pointer-events:none; opacity:.6; }
+.note-label {
+  font-size:clamp(8px,1.6vw,13px);
+  font-weight:900;
+  pointer-events:none;
+  opacity:.75;
+  text-shadow: 0 1px 2px rgba(0,0,0,.2);
+}
 .black-key {
   position:absolute; cursor:pointer; z-index:2;
-  border-radius:0 0 7px 7px;
+  border-radius:0 0 8px 8px;
   box-shadow:2px 5px 9px rgba(0,0,0,.65), inset 0 -2px 3px rgba(255,255,255,.08);
   transition:filter .08s, transform .08s;
 }
@@ -190,7 +169,7 @@ body {
 /* ── particles ── */
 .note-particle {
   position:fixed; pointer-events:none; z-index:100;
-  font-size:22px; animation:floatUp 1.2s ease-out forwards;
+  font-size:24px; animation:floatUp 1.2s ease-out forwards;
 }
 @keyframes floatUp {
   0%   { opacity:1; transform:translateY(0) scale(1) rotate(0deg); }
@@ -209,32 +188,36 @@ body {
 .modal {
   background:linear-gradient(135deg,#1e0840,#0d1a4a);
   border:1.5px solid rgba(255,255,255,.2); border-radius:22px;
-  padding:20px 18px; width:min(380px,94vw); max-height:82vh; overflow-y:auto;
+  padding:22px 20px; width:min(380px,94vw); max-height:82vh; overflow-y:auto;
   scrollbar-width:thin; scrollbar-color:rgba(255,107,203,.4) transparent;
 }
 .modal h2 {
-  font-family:'Fredoka One',cursive; font-size:20px; margin-bottom:14px; text-align:center;
+  font-family:'Fredoka One',cursive; font-size:22px; margin-bottom:16px; text-align:center;
   background:linear-gradient(135deg,#ff6bcb,#7bf7ff);
   -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
 }
-.modal-section { margin-bottom:13px; }
-.modal-section label { font-size:11px; font-weight:800; color:rgba(255,255,255,.6); display:block; margin-bottom:5px; }
-.chip-grid { display:flex; flex-wrap:wrap; gap:5px; }
+.modal-section { margin-bottom:15px; }
+.modal-section label {
+  font-size:13px; font-weight:800; color:rgba(255,255,255,.7);
+  display:block; margin-bottom:8px;
+}
+.chip-grid { display:flex; flex-wrap:wrap; gap:8px; }
 .chip {
-  padding:5px 11px; border-radius:14px; font-size:11px; font-weight:700;
-  background:rgba(255,255,255,.08); border:1.5px solid rgba(255,255,255,.15);
-  color:rgba(255,255,255,.8); cursor:pointer; transition:all .15s; user-select:none;
+  padding:8px 16px; border-radius:16px; font-size:14px; font-weight:800;
+  background:rgba(255,255,255,.08); border:2px solid rgba(255,255,255,.18);
+  color:rgba(255,255,255,.85); cursor:pointer; transition:all .15s; user-select:none;
+  min-height:38px; display:flex; align-items:center;
 }
 .chip.active {
   background:linear-gradient(135deg,var(--accent),#c847ff);
-  border-color:transparent; color:#fff; box-shadow:0 0 8px rgba(255,107,203,.4);
+  border-color:transparent; color:#fff; box-shadow:0 0 10px rgba(255,107,203,.45);
 }
 .chip:active { transform:scale(.92); }
 .close-modal-btn {
-  width:100%; padding:11px; border-radius:14px; border:none;
+  width:100%; padding:13px; border-radius:16px; border:none;
   background:linear-gradient(135deg,var(--accent),#c847ff);
-  font-family:'Fredoka One',cursive; font-size:15px; color:#fff;
-  cursor:pointer; margin-top:6px;
+  font-family:'Fredoka One',cursive; font-size:17px; color:#fff;
+  cursor:pointer; margin-top:8px;
 }
 
 
@@ -246,33 +229,21 @@ body {
 <!-- ══ TOP PANEL ══ -->
 <div class="top-panel">
 
-  <!-- row1: タイトル・音量・アイコン -->
-  <div class="top-row1">
-    <div class="app-title">🎹 ピアノランド</div>
-    <div class="vol-row">
-      <span>🔊</span>
-      <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="0.7">
-    </div>
-    <div class="spacer"></div>
-    <button class="icon-btn" id="settings-btn" onclick="openSettings()">⚙️</button>
-  </div>
-
-  <!-- row2: 鍵盤数 ＋ 音色 -->
+  <!-- row1: 鍵盤数 ＋ 音色 ＋ ギアマーク -->
   <div class="setting-row">
     <span class="row-label">🎹</span>
-    <button class="pill active" onclick="setKeys(10,this)">10けん</button>
-    <button class="pill" onclick="setKeys(20,this)">20けん</button>
-    <button class="pill" onclick="setKeys(30,this)">30けん</button>
+    <button class="pill" onclick="setKeys(10,this)">10</button>
+    <button class="pill" onclick="setKeys(20,this)">20</button>
+    <button class="pill active" onclick="setKeys(30,this)">30</button>
     <span class="row-label" style="margin-left:4px">🎵</span>
     <button class="pill active" data-timbre="piano"   onclick="setTimbre('piano',this)">🎹ピアノ</button>
     <button class="pill" data-timbre="organ"   onclick="setTimbre('organ',this)">🎻オルガン</button>
-    <button class="pill" data-timbre="guitar"  onclick="setTimbre('guitar',this)">🎸ギター</button>
-    <button class="pill" data-timbre="bell"    onclick="setTimbre('bell',this)">🔔ベル</button>
-    <button class="pill" data-timbre="marimba" onclick="setTimbre('marimba',this)">🪘マリンバ</button>
     <button class="pill" data-timbre="synth"   onclick="setTimbre('synth',this)">🤖シンセ</button>
+    <div class="spacer" style="flex:1"></div>
+    <button class="icon-btn" id="settings-btn" onclick="openSettings()">⚙️</button>
   </div>
 
-  <!-- row3: 背景テーマ -->
+  <!-- row2: 背景テーマ -->
   <div class="setting-row">
     <span class="row-label">🌏</span>
     <button class="pill active" data-theme="space"   onclick="setTheme('space',this)">🚀うちゅう</button>
@@ -285,13 +256,12 @@ body {
     <button class="pill" data-theme="cute"    onclick="setTheme('cute',this)">🌸かわいい</button>
   </div>
 
-  <!-- row4: 鍵盤カラー ＋ デモ -->
+  <!-- row3: 鍵盤カラー ＋ デモ -->
   <div class="setting-row">
     <span class="row-label">🎨</span>
     <button class="pill active" data-kc="classic" onclick="setKeyColor('classic',this)">⬜ふつう</button>
     <button class="pill" data-kc="rainbow" onclick="setKeyColor('rainbow',this)">🌈レインボー</button>
     <button class="pill" data-kc="pastel"  onclick="setKeyColor('pastel',this)">🍬パステル</button>
-    <button class="pill" data-kc="neon"    onclick="setKeyColor('neon',this)">💜ネオン</button>
     <button class="pill" data-kc="ocean"   onclick="setKeyColor('ocean',this)">🌊オーシャン</button>
     <button class="pill" data-kc="sunset"  onclick="setKeyColor('sunset',this)">🌅サンセット</button>
     <span style="flex-shrink:0;width:6px"></span>
@@ -307,7 +277,7 @@ body {
     <div class="tempo-ctrl">
       <span>♩</span>
       <button class="tempo-btn" onclick="changeTempo(-10)">－</button>
-      <span id="tempo-val" style="font-size:11px;font-weight:800;min-width:26px;text-align:center;">100</span>
+      <span id="tempo-val" style="font-size:12px;font-weight:800;min-width:28px;text-align:center;">100</span>
       <button class="tempo-btn" onclick="changeTempo(+10)">＋</button>
     </div>
   </div>
@@ -352,17 +322,11 @@ let currentTimbre = 'piano';
 let particlesOn = true;
 let labelsOn = true;
 
-document.getElementById('vol-slider').addEventListener('input', e =>
-  masterGain.gain.setTargetAtTime(+e.target.value, AC.currentTime, 0.02));
-
 function resumeAC() { if (AC.state === 'suspended') AC.resume(); }
 
 const TIMBRES = {
   piano:   { wave:'custom',   attack:.003, decay:.5,  sustain:.15, release:.8,  harmonics:[1,.6,.3,.15,.08,.04,.02], filterFreq:4000,  filterQ:.7,  filterType:'lowpass'  },
   organ:   { wave:'sine',     attack:.01,  decay:.0,  sustain:.9,  release:.05, harmonics:[1,.8,.6,.4,.3,.2,.15,.1], filterFreq:8000,  filterQ:.5,  filterType:'lowpass'  },
-  guitar:  { wave:'custom',   attack:.002, decay:.3,  sustain:.05, release:1.2, harmonics:[1,.5,.25,.12,.06,.03],    filterFreq:3000,  filterQ:1.2, filterType:'lowpass'  },
-  bell:    { wave:'sine',     attack:.001, decay:.1,  sustain:.05, release:2.5, harmonics:[1,.4,.2,.1],              filterFreq:10000, filterQ:.5,  filterType:'highpass' },
-  marimba: { wave:'custom',   attack:.002, decay:.15, sustain:.02, release:.6,  harmonics:[1,.3,.15,.05],            filterFreq:5000,  filterQ:.8,  filterType:'bandpass' },
   synth:   { wave:'sawtooth', attack:.02,  decay:.1,  sustain:.6,  release:.3,  harmonics:[1],                       filterFreq:2000,  filterQ:5,   filterType:'lowpass'  }
 };
 
@@ -419,11 +383,6 @@ const KC = {
     black: (i) => ['#e0559a','#e07a30','#c8b400','#1fc85a','#1a78e0','#8a2be2','#c020c0'][i%7],
     wText: 'rgba(80,0,60,.6)', bText: 'rgba(255,255,255,.9)'
   },
-  neon: {
-    white: (i) => ['#ff88cc','#88ffee','#aaff44','#ffee44','#44aaff','#ff4488','#88ffaa'][i%7],
-    black: (i) => ['#ff00aa','#00ffee','#aaff00','#ff8800','#0088ff','#ff0044','#00ff88'][i%7],
-    wText: 'rgba(0,0,0,.6)', bText: 'rgba(0,0,0,.7)'
-  },
   ocean: {
     white: (i) => ['#74ebd5','#90e0ef','#caf0f8','#ade8f4','#48cae4','#90e0ef','#74ebd5'][i%7],
     black: (i) => ['#023e8a','#0077b6','#0096c7','#00b4d8','#0077b6','#023e8a','#0096c7'][i%7],
@@ -450,7 +409,7 @@ const JP = ['ド','ド#','レ','レ#','ミ','ファ','ファ#','ソ','ソ#','ラ
 const midiToFreq = m => 440 * Math.pow(2, (m-69)/12);
 const isBlack    = m => [1,3,6,8,10].includes(m%12);
 
-let currentKeys = 10;
+let currentKeys = 30;
 const START_MIDI = 60; // C4
 
 /* ═══════════════════════════════════════
@@ -502,6 +461,7 @@ function buildPiano() {
     }
     el.addEventListener('pointerdown', e => { e.preventDefault(); triggerNote(midi, el); });
     piano.appendChild(el);
+    wIdx++;
   });
 
   // ── black keys ──
@@ -623,7 +583,6 @@ const bgC = document.getElementById('bg-canvas');
 const bgX = bgC.getContext('2d');
 let   bgT = 0;
 function resizeBg() {
-  // canvasはbodyと同じサイズ（回転後の横長サイズ）
   bgC.width  = parseFloat(document.body.style.width)  || window.innerWidth;
   bgC.height = parseFloat(document.body.style.height) || window.innerHeight;
 }
@@ -744,18 +703,15 @@ function applyLayout() {
   const body = document.body;
 
   if (vh > vw) {
-    // 縦持ち: bodyをvh×vwの横長ボックスにして中心で90度回転
-    // 中心を画面中央に合わせるため top/left をオフセット
-    const W = vh; // 横長にした時の幅 = 縦画面の高さ
-    const H = vw; // 横長にした時の高さ = 縦画面の幅
+    const W = vh;
+    const H = vw;
     body.style.width  = W + 'px';
     body.style.height = H + 'px';
-    body.style.top    = ((vh - H) / 2) + 'px'; // = (vh-vw)/2
-    body.style.left   = ((vw - W) / 2) + 'px'; // = (vw-vh)/2 (負の値)
+    body.style.top    = ((vh - H) / 2) + 'px';
+    body.style.left   = ((vw - W) / 2) + 'px';
     body.style.transform = 'rotate(90deg)';
     body.style.transformOrigin = '50% 50%';
   } else {
-    // 横持ち: そのまま全画面
     body.style.width  = vw + 'px';
     body.style.height = vh + 'px';
     body.style.top    = '0';
