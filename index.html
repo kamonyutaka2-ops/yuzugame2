@@ -86,25 +86,25 @@ body {
 
 /* ─ デモ行 ─ */
 .demo-btn {
-  background:linear-gradient(135deg,#ffec5c,#ff9f43); border:none; border-radius:20px;
-  padding:5px 13px; font-family:'Fredoka One',cursive; font-size:13px; color:#3a2000;
+  background:linear-gradient(135deg,#ffec5c,#ff9f43); border:none; border-radius:18px;
+  padding:4px 10px; font-family:'Fredoka One',cursive; font-size:12px; color:#3a2000;
   cursor:pointer; box-shadow:0 2px 8px rgba(255,159,67,.35); transition:all .15s; flex-shrink:0;
-  min-height:32px;
+  min-height:30px;
 }
 .demo-btn:active { transform:scale(.93); }
 .demo-btn.playing { background:linear-gradient(135deg,#ff6bcb,#c847ff); color:#fff; }
 .song-select {
-  background:var(--ui-bg); border:2px solid var(--ui-border); border-radius:16px;
-  padding:4px 9px; font-family:'Nunito',sans-serif; font-size:12px; font-weight:700;
-  color:#fff; cursor:pointer; flex:1 1 80px; min-width:0; max-width:130px;
+  background:var(--ui-bg); border:2px solid var(--ui-border); border-radius:14px;
+  padding:3px 7px; font-family:'Nunito',sans-serif; font-size:11px; font-weight:700;
+  color:#fff; cursor:pointer; flex:0 1 70px; min-width:0;
   outline:none; appearance:none; -webkit-appearance:none;
-  min-height:32px;
+  min-height:30px;
 }
-.tempo-ctrl { display:flex; align-items:center; gap:4px; flex-shrink:0; }
-.tempo-ctrl span { font-size:11px; color:rgba(255,255,255,.6); font-weight:700; }
+.tempo-ctrl { display:flex; align-items:center; gap:3px; flex-shrink:0; }
+.tempo-ctrl span { font-size:10px; color:rgba(255,255,255,.6); font-weight:700; }
 .tempo-btn {
   background:var(--ui-bg); border:2px solid var(--ui-border); color:#fff;
-  border-radius:9px; width:26px; height:26px; font-size:15px; cursor:pointer;
+  border-radius:8px; width:24px; height:24px; font-size:14px; cursor:pointer;
   display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
 
@@ -209,7 +209,7 @@ body {
   min-height:38px; display:flex; align-items:center;
 }
 .chip.active {
-  background:linear-gradient(135deg,var(--accent),#c847ff);
+  background:linear-gradient(135deg,var(--accent),#c847ff));
   border-color:transparent; color:#fff; box-shadow:0 0 10px rgba(255,107,203,.45);
 }
 .chip:active { transform:scale(.92); }
@@ -229,7 +229,7 @@ body {
 <!-- ══ TOP PANEL ══ -->
 <div class="top-panel">
 
-  <!-- row1: 鍵盤数 ＋ 音色 ＋ ギアマーク -->
+  <!-- row1: 鍵盤数 ＋ 音色 ＋ みほん演奏 ＋ ギアマーク -->
   <div class="setting-row">
     <span class="row-label">🎹</span>
     <button class="pill" onclick="setKeys(10,this)">10</button>
@@ -240,31 +240,6 @@ body {
     <button class="pill" data-timbre="organ"   onclick="setTimbre('organ',this)">🎻オルガン</button>
     <button class="pill" data-timbre="synth"   onclick="setTimbre('synth',this)">🤖シンセ</button>
     <div class="spacer" style="flex:1"></div>
-    <button class="icon-btn" id="settings-btn" onclick="openSettings()">⚙️</button>
-  </div>
-
-  <!-- row2: 背景テーマ -->
-  <div class="setting-row">
-    <span class="row-label">🌏</span>
-    <button class="pill active" data-theme="space"   onclick="setTheme('space',this)">🚀うちゅう</button>
-    <button class="pill" data-theme="ocean"   onclick="setTheme('ocean',this)">🌊うみ</button>
-    <button class="pill" data-theme="forest"  onclick="setTheme('forest',this)">🌿もり</button>
-    <button class="pill" data-theme="candy"   onclick="setTheme('candy',this)">🍭キャンディ</button>
-    <button class="pill" data-theme="sunset"  onclick="setTheme('sunset',this)">🌅サンセット</button>
-    <button class="pill" data-theme="night"   onclick="setTheme('night',this)">🌙よぞら</button>
-    <button class="pill" data-theme="rainbow" onclick="setTheme('rainbow',this)">🌈にじ</button>
-    <button class="pill" data-theme="cute"    onclick="setTheme('cute',this)">🌸かわいい</button>
-  </div>
-
-  <!-- row3: 鍵盤カラー ＋ デモ -->
-  <div class="setting-row">
-    <span class="row-label">🎨</span>
-    <button class="pill active" data-kc="classic" onclick="setKeyColor('classic',this)">⬜ふつう</button>
-    <button class="pill" data-kc="rainbow" onclick="setKeyColor('rainbow',this)">🌈レインボー</button>
-    <button class="pill" data-kc="pastel"  onclick="setKeyColor('pastel',this)">🍬パステル</button>
-    <button class="pill" data-kc="ocean"   onclick="setKeyColor('ocean',this)">🌊オーシャン</button>
-    <button class="pill" data-kc="sunset"  onclick="setKeyColor('sunset',this)">🌅サンセット</button>
-    <span style="flex-shrink:0;width:6px"></span>
     <button class="demo-btn" id="demo-btn" onclick="toggleDemo()">▶ みほん</button>
     <select class="song-select" id="song-select" onchange="stopDemo()">
       <option value="canon">カノン</option>
@@ -277,9 +252,32 @@ body {
     <div class="tempo-ctrl">
       <span>♩</span>
       <button class="tempo-btn" onclick="changeTempo(-10)">－</button>
-      <span id="tempo-val" style="font-size:12px;font-weight:800;min-width:28px;text-align:center;">100</span>
+      <span id="tempo-val" style="font-size:11px;font-weight:800;min-width:24px;text-align:center;">100</span>
       <button class="tempo-btn" onclick="changeTempo(+10)">＋</button>
     </div>
+    <button class="icon-btn" id="settings-btn" onclick="openSettings()">⚙️</button>
+  </div>
+
+  <!-- row2: 背景テーマ -->
+  <div class="setting-row">
+    <span class="row-label">🌏</span>
+    <button class="pill active" data-theme="space"   onclick="setTheme('space',this)">🚀うちゅう</button>
+    <button class="pill" data-theme="ocean"   onclick="setTheme('ocean',this)">🌊うみ</button>
+    <button class="pill" data-theme="forest"  onclick="setTheme('forest',this)">🌿もり</button>
+    <button class="pill" data-theme="candy"   onclick="setTheme('candy',this)">🍭キャンディ</button>
+    <button class="pill" data-theme="sunset"  onclick="setTheme('sunset',this)">🌅サンセット</button>
+    <button class="pill" data-theme="night"   onclick="setTheme('night',this)">🌙よぞら</button>
+    <button class="pill" data-theme="cute"    onclick="setTheme('cute',this)">🌸かわいい</button>
+  </div>
+
+  <!-- row3: 鍵盤カラー -->
+  <div class="setting-row">
+    <span class="row-label">🎨</span>
+    <button class="pill active" data-kc="classic" onclick="setKeyColor('classic',this)">⬜ふつう</button>
+    <button class="pill" data-kc="rainbow" onclick="setKeyColor('rainbow',this)">🌈レインボー</button>
+    <button class="pill" data-kc="pastel"  onclick="setKeyColor('pastel',this)">🍬パステル</button>
+    <button class="pill" data-kc="ocean"   onclick="setKeyColor('ocean',this)">🌊オーシャン</button>
+    <button class="pill" data-kc="sunset"  onclick="setKeyColor('sunset',this)">🌅サンセット</button>
   </div>
 
 </div><!-- /top-panel -->
@@ -362,6 +360,11 @@ function playNote(freq, dur = 0.8) {
   g.gain.setTargetAtTime(t.sustain*.7, now+t.attack+t.decay, .1);
   g.gain.setTargetAtTime(0, now+dur, t.release/3);
   o.start(now); o.stop(now+dur+t.release+.5);
+}
+
+/* ─ 複数音を同時再生 ─ */
+function playChord(freqs, dur = 0.8) {
+  freqs.forEach(freq => playNote(freq, dur));
 }
 
 /* ═══════════════════════════════════════
@@ -569,7 +572,6 @@ const THEMES = {
   candy:   { drawBg: drawCandy   },
   sunset:  { drawBg: drawSunset  },
   night:   { drawBg: drawNight   },
-  rainbow: { drawBg: drawRainbow },
   cute:    { drawBg: drawCute    }
 };
 let currentTheme = 'space';
@@ -625,13 +627,6 @@ function drawNight(c,w,h,t){
   stars.forEach(s=>{const b=.5+.5*Math.sin(s.t+t*s.s*50);c.beginPath();c.arc(s.x*w,s.y*h*.8,s.r*1.2,0,Math.PI*2);c.fillStyle=`rgba(200,180,255,${.4+b*.6})`;c.fill();});
   c.beginPath();c.arc(w*.82,h*.15,28,0,Math.PI*2);c.fillStyle='rgba(255,240,200,.9)';c.fill();c.beginPath();c.arc(w*.87,h*.13,24,0,Math.PI*2);c.fillStyle='#050510';c.fill();
 }
-function drawRainbow(c,w,h,t){
-  c.fillStyle='#0d0010';c.fillRect(0,0,w,h);
-  ['#ff4444','#ff9944','#ffee44','#44ff77','#44aaff','#8844ff','#ff44cc'].forEach((col,i)=>{
-    const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,col+'00');g.addColorStop(i/7+Math.sin(t*.3)*.03,col+'25');g.addColorStop(1,col+'00');c.fillStyle=g;c.fillRect(0,0,w,h);
-    for(let x=0;x<=w;x+=60){c.beginPath();c.arc(x,h*(i/7)+Math.sin(x/w*Math.PI*4+t+i)*20,4,0,Math.PI*2);c.fillStyle=col+'55';c.fill();}
-  });
-}
 function drawCute(c,w,h,t){
   const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,'#1a0020');g.addColorStop(1,'#2d0040');c.fillStyle=g;c.fillRect(0,0,w,h);
   stars.forEach((s,i)=>{const y=(s.y+t*s.s*.5)%1,b=.3+.4*Math.sin(s.t+t*.04*60);c.font=`${s.r*8+6}px serif`;c.globalAlpha=b*.5;c.fillText(['💕','🌸','⭐','✨'][i%4],s.x*w,y*h);c.globalAlpha=1;});
@@ -646,15 +641,59 @@ function bgLoop(ts) {
 requestAnimationFrame(bgLoop);
 
 /* ═══════════════════════════════════════
-   DEMO SONGS
+   DEMO SONGS (メロディ＋伴奏)
 ═══════════════════════════════════════ */
 const SONGS = {
-  canon:   {notes:[[64,1],[62,1],[60,1],[59,1],[57,1],[55,1],[57,1],[59,1],[60,1],[59,1],[57,1],[55,1],[53,1],[52,1],[53,1],[55,1],[57,1],[55,1],[57,1],[59,1],[60,1],[59,1],[60,1],[62,1],[64,2],[62,1],[60,1],[59,1],[57,1],[55,1],[53,1],[52,1],[53,1],[55,1],[57,1],[55,1],[53,1],[52,1],[53,1],[55,1],[57,1],[59,1],[57,1],[55,1],[53,1],[52,1],[53,1],[55,1],[57,2]]},
-  twinkle: {notes:[[60,1],[60,1],[67,1],[67,1],[69,1],[69,1],[67,2],[65,1],[65,1],[64,1],[64,1],[62,1],[62,1],[60,2],[67,1],[67,1],[65,1],[65,1],[64,1],[64,1],[62,2],[67,1],[67,1],[65,1],[65,1],[64,1],[64,1],[62,2],[60,1],[60,1],[67,1],[67,1],[69,1],[69,1],[67,2],[65,1],[65,1],[64,1],[64,1],[62,1],[62,1],[60,2]]},
-  bday:    {notes:[[60,.75],[60,.25],[62,1],[60,1],[65,1],[64,2],[60,.75],[60,.25],[62,1],[60,1],[67,1],[65,2],[60,.75],[60,.25],[72,1],[69,1],[65,1],[64,1],[62,1],[70,.75],[70,.25],[69,1],[65,1],[67,1],[65,2]]},
-  doremi:  {notes:[[60,1],[62,1],[64,1],[60,1],[64,1],[60,1],[64,2],[65,1],[67,1],[65,1],[62,1],[67,1],[65,1],[67,2],[69,1],[65,1],[67,1],[69,1],[72,2],[69,1],[67,1],[65,1],[64,1],[62,1],[60,2],[64,1],[67,1],[65,1],[64,1],[60,2]]},
-  elise:   {notes:[[76,.5],[75,.5],[76,.5],[75,.5],[76,.5],[71,.5],[74,.5],[72,.5],[69,1.5],[60,.5],[64,.5],[69,.5],[71,1.5],[62,.5],[66,.5],[71,.5],[72,1.5],[64,.5],[76,.5],[75,.5],[76,.5],[75,.5],[76,.5],[71,.5],[74,.5],[72,.5],[69,1.5],[60,.5],[64,.5],[69,.5],[71,1],[72,.5],[64,.5],[71,.5],[69,.5],[60,2]]},
-  joy:     {notes:[[64,1],[64,1],[65,1],[67,1],[67,1],[65,1],[64,1],[62,1],[60,1],[60,1],[62,1],[64,1],[64,1.5],[62,.5],[62,2],[64,1],[64,1],[65,1],[67,1],[67,1],[65,1],[64,1],[62,1],[60,1],[60,1],[62,1],[64,1],[62,1.5],[60,.5],[60,2],[62,1],[62,1],[64,1],[60,1],[62,1],[64,.5],[65,.5],[64,1],[60,1],[62,1],[64,.5],[65,.5],[64,1],[62,1],[60,1],[62,1],[55,2]]}
+  canon: {
+    melody: [[60,2],[62,2],[64,2],[65,2],[67,2],[69,2],[71,2],[72,2],[71,2],[69,2],[67,2],[65,2],[64,2],[62,2],[60,2],[62,2],[64,2],[65,2],[67,2],[69,2],[71,2],[72,2],[71,2],[69,2],[67,2],[65,2],[64,2],[62,2],[60,2],[62,2],[64,2],[65,2]],
+    harmony: [
+      {notes:[48,52,57],beats:8},
+      {notes:[50,53,57],beats:8},
+      {notes:[52,55,60],beats:8},
+      {notes:[53,57,62],beats:8}
+    ]
+  },
+  twinkle: {
+    melody: [[60,1],[60,1],[67,1],[67,1],[69,1],[69,1],[67,2],[65,1],[65,1],[64,1],[64,1],[62,1],[62,1],[60,2],[67,1],[67,1],[65,1],[65,1],[64,1],[64,1],[62,2],[67,1],[67,1],[65,1],[65,1],[64,1],[64,1],[62,2],[60,1],[60,1],[67,1],[67,1],[69,1],[69,1],[67,2],[65,1],[65,1],[64,1],[64,1],[62,1],[62,1],[60,2]],
+    harmony: [
+      {notes:[48,52,60],beats:2},
+      {notes:[50,53,62],beats:2},
+      {notes:[52,55,64],beats:2},
+      {notes:[50,53,62],beats:2}
+    ]
+  },
+  bday: {
+    melody: [[60,.75],[60,.25],[62,1],[60,1],[65,1],[64,2],[60,.75],[60,.25],[62,1],[60,1],[67,1],[65,2],[60,.75],[60,.25],[72,1],[69,1],[65,1],[64,1],[62,1],[70,.75],[70,.25],[69,1],[65,1],[67,1],[65,2]],
+    harmony: [
+      {notes:[48,52,60],beats:2},
+      {notes:[53,57,65],beats:2},
+      {notes:[55,60,67],beats:2}
+    ]
+  },
+  doremi: {
+    melody: [[60,1],[62,1],[64,1],[60,1],[64,1],[60,1],[64,2],[65,1],[67,1],[65,1],[62,1],[67,1],[65,1],[67,2],[69,1],[65,1],[67,1],[69,1],[72,2],[69,1],[67,1],[65,1],[64,1],[62,1],[60,2],[64,1],[67,1],[65,1],[64,1],[60,2]],
+    harmony: [
+      {notes:[48,52,60],beats:2},
+      {notes:[50,53,62],beats:2},
+      {notes:[52,55,64],beats:2}
+    ]
+  },
+  elise: {
+    melody: [[76,.5],[75,.5],[76,.5],[75,.5],[76,.5],[71,.5],[74,.5],[72,.5],[69,1.5],[60,.5],[64,.5],[69,.5],[71,1.5],[62,.5],[66,.5],[71,.5],[72,1.5],[64,.5],[76,.5],[75,.5],[76,.5],[75,.5],[76,.5],[71,.5],[74,.5],[72,.5],[69,1.5],[60,.5],[64,.5],[69,.5],[71,1],[72,.5],[64,.5],[71,.5],[69,.5],[60,2]],
+    harmony: [
+      {notes:[48,52,60],beats:2},
+      {notes:[50,53,62],beats:2},
+      {notes:[52,55,64],beats:2}
+    ]
+  },
+  joy: {
+    melody: [[64,1],[64,1],[65,1],[67,1],[67,1],[65,1],[64,1],[62,1],[60,1],[60,1],[62,1],[64,1],[64,1.5],[62,.5],[62,2],[64,1],[64,1],[65,1],[67,1],[67,1],[65,1],[64,1],[62,1],[60,1],[60,1],[62,1],[64,1],[62,1.5],[60,.5],[60,2],[62,1],[62,1],[64,1],[60,1],[62,1],[64,.5],[65,.5],[64,1],[60,1],[62,1],[64,.5],[65,.5],[64,1],[62,1],[60,1],[62,1],[55,2]],
+    harmony: [
+      {notes:[48,52,60],beats:2},
+      {notes:[50,53,62],beats:2},
+      {notes:[52,55,64],beats:2}
+    ]
+  }
 };
 
 let demoPlaying=false, demoTOs=[], tempo=100;
@@ -678,7 +717,9 @@ function startDemo() {
   const song = SONGS[document.getElementById('song-select').value];
   const bms  = 60000 / tempo;
   let time = 0;
-  song.notes.forEach(([midi, beats]) => {
+  
+  // メロディ再生
+  song.melody.forEach(([midi, beats]) => {
     const t=time, dur=beats*bms;
     demoTOs.push(setTimeout(() => {
       if (!demoPlaying) return;
@@ -689,6 +730,21 @@ function startDemo() {
     }, t));
     time += dur;
   });
+  
+  // 伴奏再生（ハーモニー）
+  let harmonyTime = 0;
+  const harmonyBms = bms * 2; // 伴奏は2拍単位
+  song.harmony.forEach(h => {
+    for(let i=0; i<song.melody.length; i++) {
+      const hTime = harmonyTime;
+      demoTOs.push(setTimeout(() => {
+        if (!demoPlaying) return;
+        playChord(h.notes.map(midiToFreq), harmonyBms*.85/1000);
+      }, hTime));
+      harmonyTime += harmonyBms;
+    }
+  });
+  
   demoTOs.push(setTimeout(stopDemo, time+200));
 }
 
